@@ -1,0 +1,13 @@
+[package]
+name = "AoC_day1"
+version = "0.0.1"
+authors = ["MajorX234 <majorx234@googlemail.com>"]
+edition = "2021"
+
+[lib]
+name = "aoc_lib"
+path = "src/lib.rs"
+
+[[bin]]
+name = "task1"
+path = "src/bin/task1.rs"
