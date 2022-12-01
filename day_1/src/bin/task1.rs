@@ -1,20 +1,8 @@
-use std::env::args;
-use std::fs::File;
+use aoc_lib::read_arg_file;
 use std::io::{self, prelude::*, BufReader};
 
-fn main() -> io::Result<()> {
-    let mut argit = args();
-    let file_name = argit.nth(1).clone();
-
-    let file_name = if let Some(file_name) = file_name {
-        file_name
-    } else {
-        panic!("No filename argument given");
-    };
-
-    let file = File::open(file_name)?;
-    let reader = BufReader::new(file);
-
+fn main() {
+    let reader = read_arg_file().unwrap();
     let max_elfsum_id: (u32, u32, u32) = (0, 0, 0);
     let fourtytwo = reader.lines().fold(max_elfsum_id, |acc, x| {
         if let Ok(x) = x {
@@ -33,6 +21,6 @@ fn main() -> io::Result<()> {
         }
         acc
     });
-    println!("{:?}", fourtytwo);
-    Ok(())
+    let (max_elf, _, _) = fourtytwo;
+    println!("{}", max_elf);
 }
