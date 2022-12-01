@@ -4,7 +4,7 @@ use std::io::{self, prelude::*, BufReader};
 fn main() {
     let reader = read_arg_file().unwrap();
     let max_elfsum_id: (u32, u32, u32) = (0, 0, 0);
-    let fourtytwo = reader.lines().fold(max_elfsum_id, |acc, x| {
+    let fold_fct_task1 = |acc, x: Result<String, _>| {
         if let Ok(x) = x {
             let (max, elfsum, id) = acc;
             if x == "" {
@@ -20,7 +20,8 @@ fn main() {
             }
         }
         acc
-    });
+    };
+    let fourtytwo = reader.lines().fold(max_elfsum_id, fold_fct_task1);
     let (max_elf, _, _) = fourtytwo;
     println!("{}", max_elf);
 }
