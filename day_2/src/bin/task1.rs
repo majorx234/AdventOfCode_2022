@@ -38,9 +38,17 @@ fn main() {
         (map, sum)
     };
 
-    let first = reader.lines().fold(sum1_rules1, sum_up);
+    let (first, second) = &reader
+        .lines()
+        .fold((sum1_rules1, sum2_rules2), |(x1, x2), line_raw| {
+            let line: String = line_raw.unwrap();
+            return (
+                sum_up(x1, Ok::<String, String>(line.clone())),
+                sum_up(x2, Ok(line)),
+            );
+        });
     let (_, sum1) = first;
-    let second = "nothing yet";
+    let (_, sum2) = second;
     println!("1st:{}", sum1);
-    println!("2nd:{}", second);
+    println!("2nd:{}", sum2);
 }
