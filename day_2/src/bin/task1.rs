@@ -16,10 +16,25 @@ fn main() {
     rules1.insert("C Y".to_string(), 2);
     rules1.insert("C Z".to_string(), 6);
 
+    let mut rules2 = HashMap::new();
+    rules2.insert("A X".to_string(), 3);
+    rules2.insert("A Y".to_string(), 4);
+    rules2.insert("A Z".to_string(), 8);
+    rules2.insert("B X".to_string(), 1);
+    rules2.insert("B Y".to_string(), 5);
+    rules2.insert("B Z".to_string(), 9);
+    rules2.insert("C X".to_string(), 2);
+    rules2.insert("C Y".to_string(), 6);
+    rules2.insert("C Z".to_string(), 7);
+
     let sum1_rules1: (HashMap<String, u32>, u32) = (rules1, 0);
-    let sum_up = |acc, x: Result<String, _>| {
+    let sum2_rules2: (HashMap<String, u32>, u32) = (rules2, 0);
+
+    let sum_up = |acc, x: Result<String, _>| -> (HashMap<String, u32>, u32) {
         let (map, mut sum): (HashMap<String, u32>, u32) = acc;
-        sum += map.get(&x.unwrap()).unwrap();
+        if let Some(value) = map.get(&x.unwrap()) {
+            sum += value;
+        }
         (map, sum)
     };
 
