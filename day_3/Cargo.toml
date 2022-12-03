@@ -1,0 +1,17 @@
+[package]
+name = "AoC_day3"
+version = "0.0.1"
+authors = ["MajorX234 <majorx234@googlemail.com>"]
+edition = "2021"
+
+[dependencies]
+AoC_day1 = {path = "../day_1", version = "0.0.1"}
+
+
+[[bin]]
+name = "rucksack"
+path = "src/bin/task1.rs"
+
+[[bin]]
+name = "rucksack_batch"
+path = "src/bin/task2.rs"
