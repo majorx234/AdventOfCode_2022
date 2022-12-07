@@ -16,26 +16,21 @@ fn main() {
         panic!("No window_size argument given");
     };
 
-    let reader = read_arg_file().unwrap();
-    if let Some(Ok(line)) = reader.lines().nth(0) {
+    if let Some(Ok(line)) = read_arg_file().unwrap().lines().nth(0) {
         for (index, window) in line
             .chars()
             .collect::<Vec<char>>()
             .windows(window_size)
             .enumerate()
         {
-            let has_dublicate_fct = |acc, x: &char| {
-                let (has_dublicate, mut hashmap): (bool, HashMap<char, bool>) = acc;
+            let has_dublicate_fct = |mut hashmap: HashMap<char, bool>, x: &char| {
                 if let None = hashmap.insert(*x, true) {
-                    (has_dublicate, hashmap)
-                } else {
-                    (true, hashmap)
+                    return Some(hashmap);
                 }
+                None
             };
-            let (has_dublicate, _) = window
-                .iter()
-                .fold((false, HashMap::new()), has_dublicate_fct);
-            if !has_dublicate {
+            let has_no_dublicate = window.iter().try_fold(HashMap::new(), has_dublicate_fct);
+            if has_no_dublicate != None {
                 print!("index: {}\n", index + window_size);
                 break;
             }
