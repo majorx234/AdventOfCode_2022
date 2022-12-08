@@ -55,11 +55,30 @@ impl FsNode {
         if self.file_type == FileType::File {
             println!("{}- {} ({}, size={})", deepth_spaces, name, file_type, size);
         } else {
-            println!("{}- {} ({})", deepth_spaces, name, file_type);
+            println!("{}- {} ({}, size={})", deepth_spaces, name, file_type, size);
             for child in self.children.iter() {
                 //.map(|tn| {
                 child.borrow().print(deepth + 2);
             }
+        }
+    }
+
+    pub fn filter(&self, filter_size: u32, bigger: bool) -> Vec<u32> {
+        let mut size: u32 = if let Some(size) = self.size { size } else { 0 };
+        if self.file_type == FileType::File {
+            return vec![0u32];
+        } else {
+            if bigger {
+                size = if size >= filter_size { size } else { 0 };
+            } else {
+                size = if size <= filter_size { size } else { 0 };
+            }
+            let mut sumvec = vec![size];
+            for child in self.children.iter() {
+                sumvec.append(&mut child.borrow().filter(filter_size, bigger));
+            }
+
+            return sumvec;
         }
     }
 
@@ -72,6 +91,19 @@ impl FsNode {
             return last_parent;
         } else {
             return Rc::new(RefCell::new(self));
+        }
+    }
+
+    pub fn calc_foldersize(&mut self) -> u32 {
+        if self.file_type == FileType::File {
+            self.size.unwrap()
+        } else {
+            let mut sum: u32 = 0;
+            for child in self.children.iter() {
+                sum += child.borrow_mut().calc_foldersize();
+            }
+            self.size = Some(sum);
+            return sum;
         }
     }
 }
@@ -154,5 +186,16 @@ fn main() {
     };
     let (filesystem, deepth) = reader.lines().fold((filesystem, 0), cmd_handler);
 
-    root.borrow().print(0);
+    root.borrow_mut().calc_foldersize();
+    let root_size = match root.borrow().size {
+        Some(size) => size,
+        None => 0,
+    };
+    let sum: u32 = root.borrow().filter(100000, false).iter().sum();
+    let free_space_needed = 30000000 - (70000000u32 - root_size);
+    let mut bigger_foldersizes = root.borrow().filter(free_space_needed, true);
+    bigger_foldersizes.retain(|&i| i != 0);
+    let min_foldersize_to_delete = bigger_foldersizes.iter().min().unwrap();
+    println!("first: filtered dir sum: {}", sum);
+    println!("second: min dir to delete:{}", min_foldersize_to_delete);
 }
