@@ -62,6 +62,18 @@ impl FsNode {
             }
         }
     }
+
+    pub fn root(self) -> Rc<RefCell<FsNode>> {
+        if let Some(parent) = self.parent {
+            let mut last_parent = parent.clone();
+            while let Some(ref parent) = parent.borrow().parent {
+                last_parent = parent.clone();
+            }
+            return last_parent;
+        } else {
+            return Rc::new(RefCell::new(self));
+        }
+    }
 }
 
 fn cd_dispatcher(
@@ -96,7 +108,13 @@ fn cd_dispatcher(
 }
 
 fn main() {
-    let filesystem = FsNode::new("/".to_string(), FileType::Dir, 0, None);
+    let root = Rc::new(RefCell::new(FsNode::new(
+        "/".to_string(),
+        FileType::Dir,
+        0,
+        None,
+    )));
+    let mut filesystem = Rc::clone(&root);
     let reader = read_arg_file().unwrap();
     let cmd_handler = |(acc, deepth), x: Result<String, _>| {
         if let Ok(x) = x {
@@ -134,12 +152,7 @@ fn main() {
         }
         (acc, deepth)
     };
-    let (filesystem, deepth) = reader
-        .lines()
-        .fold((Rc::new(RefCell::new(filesystem)), 0), cmd_handler);
+    let (filesystem, deepth) = reader.lines().fold((filesystem, 0), cmd_handler);
 
-    let (filesystem, deepth) = cd_dispatcher("$ cd ..", filesystem, deepth);
-    let (filesystem, deepth) = cd_dispatcher("$ cd ..", filesystem, deepth);
-
-    filesystem.borrow().print(0);
+    root.borrow().print(0);
 }
