@@ -43,7 +43,7 @@ fn simulate_movement(
         }
 
         for tail_steps in 0..(rope_length - 1) {
-            let (mut head_x, mut head_y) = nodes[tail_steps];
+            let (head_x, head_y) = nodes[tail_steps];
             let (mut tail_x, mut tail_y) = nodes[tail_steps + 1];
 
             (tail_x, tail_y) = calc_tail_move(head_x, head_y, tail_x, tail_y);
