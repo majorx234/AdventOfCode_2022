@@ -1,0 +1,13 @@
+[package]
+name = "AoC_day9"
+version = "0.0.1"
+authors = ["MajorX234 <majorx234@googlemail.com>"]
+edition = "2021"
+
+[dependencies]
+AoC_day1 = {path = "../day_1", version = "0.0.1"}
+
+
+[[bin]]
+name = "rope_move"
+path = "src/bin/task1.rs"
