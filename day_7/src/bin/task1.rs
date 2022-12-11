@@ -146,7 +146,7 @@ fn main() {
         0,
         None,
     )));
-    let mut filesystem = Rc::clone(&root);
+    let filesystem = Rc::clone(&root);
     let reader = read_arg_file().unwrap();
     let cmd_handler = |(acc, deepth), x: Result<String, _>| {
         if let Ok(x) = x {
