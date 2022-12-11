@@ -168,7 +168,6 @@ fn main() {
                         Some(acc.clone()),
                     )));
                     acc.borrow_mut().add_node(Rc::clone(&new_node));
-                    return (acc, deepth);
                 } else {
                     let new_node = Rc::new(RefCell::new(FsNode::new(
                         ls_result[1].to_string(),
@@ -177,9 +176,7 @@ fn main() {
                         None,
                     )));
                     acc.borrow_mut().add_node(Rc::clone(&new_node));
-                    return (acc, deepth);
                 }
-                return (acc, deepth);
             }
         }
         (acc, deepth)
