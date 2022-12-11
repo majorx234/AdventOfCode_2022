@@ -17,7 +17,7 @@ fn main() {
                 } else {
                     return (max1, max2, max3, 0, id + 1);
                 }
-            } else if let x = x.parse::<u32>().unwrap() {
+            } else if let Ok(x) = x.parse::<u32>() {
                 return (max1, max2, max3, elfsum + x, id);
             } else {
                 return (max1, max2, max3, elfsum, id);
