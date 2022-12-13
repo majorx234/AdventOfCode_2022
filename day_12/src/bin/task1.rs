@@ -107,27 +107,28 @@ fn build_graph(input_map: Vec<Vec<char>>) -> HashMap<(usize, usize), Vec<(usize,
         for x_index in 0..(x_len - 1) {
             let value_l = val(input_map[y_index][x_index]);
             let value_r = val(input_map[y_index][x_index + 1]);
+
             if value_l < value_r {
                 graph
                     .entry((x_index + 1, y_index))
-                    .or_insert(vec![(x_index, y_index)])
-                    .push((x_index, y_index));
+                    .and_modify(|v| v.push((x_index, y_index)))
+                    .or_insert(vec![(x_index, y_index)]);
                 if value_r - value_l <= 1 {
                     graph
                         .entry((x_index, y_index))
-                        .or_insert(vec![(x_index + 1, y_index)])
-                        .push((x_index + 1, y_index));
+                        .and_modify(|v| v.push((x_index + 1, y_index)))
+                        .or_insert(vec![(x_index + 1, y_index)]);
                 }
             } else {
                 graph
                     .entry((x_index, y_index))
-                    .or_insert(vec![(x_index + 1, y_index)])
-                    .push((x_index + 1, y_index));
+                    .and_modify(|v| v.push((x_index + 1, y_index)))
+                    .or_insert(vec![(x_index + 1, y_index)]);
                 if value_l - value_r <= 1 {
                     graph
                         .entry((x_index + 1, y_index))
-                        .or_insert(vec![(x_index, y_index)])
-                        .push((x_index, y_index));
+                        .and_modify(|v| v.push((x_index, y_index)))
+                        .or_insert(vec![(x_index, y_index)]);
                 }
             }
         }
@@ -140,26 +141,24 @@ fn build_graph(input_map: Vec<Vec<char>>) -> HashMap<(usize, usize), Vec<(usize,
             if value_u < value_o {
                 graph
                     .entry((x_index, y_index))
-                    .or_insert(vec![(x_index, y_index + 1)])
-                    .push((x_index, y_index + 1));
-
+                    .and_modify(|v| v.push((x_index, y_index + 1)))
+                    .or_insert(vec![(x_index, y_index + 1)]);
                 if value_o - value_u <= 1 {
                     graph
                         .entry((x_index, y_index + 1))
-                        .or_insert(vec![(x_index, y_index)])
-                        .push((x_index, y_index));
+                        .and_modify(|v| v.push((x_index, y_index)))
+                        .or_insert(vec![(x_index, y_index)]);
                 }
             } else {
                 graph
                     .entry((x_index, y_index + 1))
-                    .or_insert(vec![(x_index, y_index)])
-                    .push((x_index, y_index));
-
+                    .and_modify(|v| v.push((x_index, y_index)))
+                    .or_insert(vec![(x_index, y_index)]);
                 if value_u - value_o <= 1 {
                     graph
                         .entry((x_index, y_index))
-                        .or_insert(vec![(x_index, y_index + 1)])
-                        .push((x_index, y_index + 1));
+                        .and_modify(|v| v.push((x_index, y_index + 1)))
+                        .or_insert(vec![(x_index, y_index + 1)]);
                 }
             }
         }
