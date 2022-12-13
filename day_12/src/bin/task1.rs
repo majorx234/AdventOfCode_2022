@@ -91,12 +91,12 @@ fn find_path(
 fn val(ch: char) -> u32 {
     let mut ch_val = ch as u32;
     if ch_val == 'E' as u32 {
-        ch_val = 27;
+        27
+    } else if ch_val == 'S' as u32 {
+        0
+    } else {
+        (ch_val + 1) - 'a' as u32
     }
-    if ch_val == 'S' as u32 {
-        ch_val = 0;
-    }
-    ch_val
 }
 
 fn build_graph(input_map: Vec<Vec<char>>) -> HashMap<(usize, usize), Vec<(usize, usize)>> {
@@ -108,44 +108,26 @@ fn build_graph(input_map: Vec<Vec<char>>) -> HashMap<(usize, usize), Vec<(usize,
             let value_l = val(input_map[y_index][x_index]);
             let value_r = val(input_map[y_index][x_index + 1]);
             if value_l < value_r {
-                if !graph.contains_key(&(x_index + 1, y_index)) {
-                    graph.insert((x_index + 1, y_index), vec![(x_index, y_index)]);
-                } else {
-                    graph
-                        .get_mut(&(x_index + 1, y_index))
-                        .unwrap()
-                        .push((x_index, y_index));
-                }
-
+                graph
+                    .entry((x_index + 1, y_index))
+                    .or_insert(vec![(x_index, y_index)])
+                    .push((x_index, y_index));
                 if value_r - value_l <= 1 {
-                    if !graph.contains_key(&(x_index, y_index)) {
-                        graph.insert((x_index, y_index), vec![(x_index + 1, y_index)]);
-                    } else {
-                        graph
-                            .get_mut(&(x_index, y_index))
-                            .unwrap()
-                            .push((x_index + 1, y_index));
-                    }
-                }
-            } else {
-                if !graph.contains_key(&(x_index, y_index)) {
-                    graph.insert((x_index, y_index), vec![(x_index + 1, y_index)]);
-                } else {
                     graph
-                        .get_mut(&(x_index, y_index))
-                        .unwrap()
+                        .entry((x_index, y_index))
+                        .or_insert(vec![(x_index + 1, y_index)])
                         .push((x_index + 1, y_index));
                 }
-
+            } else {
+                graph
+                    .entry((x_index, y_index))
+                    .or_insert(vec![(x_index + 1, y_index)])
+                    .push((x_index + 1, y_index));
                 if value_l - value_r <= 1 {
-                    if !graph.contains_key(&(x_index + 1, y_index)) {
-                        graph.insert((x_index, y_index), vec![(x_index, y_index)]);
-                    } else {
-                        graph
-                            .get_mut(&(x_index + 1, y_index))
-                            .unwrap()
-                            .push((x_index, y_index));
-                    }
+                    graph
+                        .entry((x_index + 1, y_index))
+                        .or_insert(vec![(x_index, y_index)])
+                        .push((x_index, y_index));
                 }
             }
         }
@@ -156,44 +138,28 @@ fn build_graph(input_map: Vec<Vec<char>>) -> HashMap<(usize, usize), Vec<(usize,
             let value_o = val(input_map[y_index][x_index]);
             let value_u = val(input_map[y_index + 1][x_index]);
             if value_u < value_o {
-                if !graph.contains_key(&(x_index, y_index)) {
-                    graph.insert((x_index, y_index), vec![(x_index, y_index + 1)]);
-                } else {
-                    graph
-                        .get_mut(&(x_index, y_index))
-                        .unwrap()
-                        .push((x_index, y_index + 1));
-                }
+                graph
+                    .entry((x_index, y_index))
+                    .or_insert(vec![(x_index, y_index + 1)])
+                    .push((x_index, y_index + 1));
 
                 if value_o - value_u <= 1 {
-                    if !graph.contains_key(&(x_index, y_index + 1)) {
-                        graph.insert((x_index, y_index), vec![(x_index, y_index)]);
-                    } else {
-                        graph
-                            .get_mut(&(x_index, y_index + 1))
-                            .unwrap()
-                            .push((x_index, y_index));
-                    }
-                }
-            } else {
-                if !graph.contains_key(&(x_index, y_index + 1)) {
-                    graph.insert((x_index, y_index), vec![(x_index, y_index)]);
-                } else {
                     graph
-                        .get_mut(&(x_index, y_index + 1))
-                        .unwrap()
+                        .entry((x_index, y_index + 1))
+                        .or_insert(vec![(x_index, y_index)])
                         .push((x_index, y_index));
                 }
+            } else {
+                graph
+                    .entry((x_index, y_index + 1))
+                    .or_insert(vec![(x_index, y_index)])
+                    .push((x_index, y_index));
 
                 if value_u - value_o <= 1 {
-                    if !graph.contains_key(&(x_index, y_index)) {
-                        graph.insert((x_index, y_index), vec![(x_index, y_index + 1)]);
-                    } else {
-                        graph
-                            .get_mut(&(x_index, y_index))
-                            .unwrap()
-                            .push((x_index, y_index + 1));
-                    }
+                    graph
+                        .entry((x_index, y_index))
+                        .or_insert(vec![(x_index, y_index + 1)])
+                        .push((x_index, y_index + 1));
                 }
             }
         }
