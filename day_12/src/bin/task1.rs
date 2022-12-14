@@ -68,7 +68,11 @@ fn find_path(
             let distance = 1;
             let start_to_neighbor_cost = distance + cost.clone();
             let new_node_costs = (start_to_neighbor_cost, node.clone());
-            if -1 == costs.get(&neighbor.clone()).unwrap().0 {
+            if None == costs.get(&neighbor.clone()) {
+                //                println!("none: {:?}", neighbor);
+                continue;
+            }
+            if costs.get(&neighbor.clone()).unwrap().0 == -1 {
                 *costs.entry(*neighbor).or_insert(new_node_costs) = new_node_costs;
             } else if start_to_neighbor_cost < costs.get(&neighbor.clone()).unwrap().0 {
                 *costs.entry(*neighbor).or_insert(new_node_costs) = new_node_costs;
