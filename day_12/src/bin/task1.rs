@@ -91,19 +91,26 @@ fn find_path(
     );
 }
 
-fn val(ch: char) -> u32 {
+fn val(ch: char, reverse: bool) -> u32 {
+    let mut returner = 0;
     let mut ch_val = ch as u32;
     if ch_val == 'E' as u32 {
-        27
+        returner = 27;
     } else if ch_val == 'S' as u32 {
-        1
+        returner = 1;
     } else {
-        (ch_val + 1) - 'a' as u32
+        returner = (ch_val + 1) - 'a' as u32;
+    }
+    if reverse {
+        28 - returner
+    } else {
+        returner
     }
 }
 
 fn build_graph(
-    input_map: Vec<Vec<char>>,
+    input_map: &Vec<Vec<char>>,
+    reverse: bool,
 ) -> (
     (usize, usize),
     Vec<(usize, usize)>,
@@ -118,8 +125,8 @@ fn build_graph(
     let x_len: usize = input_map[0].len();
     for y_index in 0..y_len {
         for x_index in 0..(x_len - 1) {
-            let value_l = val(input_map[y_index][x_index]);
-            let value_r = val(input_map[y_index][x_index + 1]);
+            let value_l = val(input_map[y_index][x_index], reverse);
+            let value_r = val(input_map[y_index][x_index + 1], reverse);
             if input_map[y_index][x_index] == 'S' {
                 start = (x_index, y_index);
             }
@@ -127,16 +134,16 @@ fn build_graph(
                 start = (x_index + 1, y_index);
             }
             // start task22
-            if value_l == val('S') {
+            if value_l == val('S', reverse) {
                 start2.push((x_index, y_index));
             }
-            if value_r == val('S') {
+            if value_r == val('S', reverse) {
                 start2.push((x_index + 1, y_index));
             }
-            if value_l == val('E') {
+            if value_l == val('E', reverse) {
                 goal = (x_index, y_index);
             }
-            if value_r == val('E') {
+            if value_r == val('E', reverse) {
                 goal = (x_index + 1, y_index);
             }
 
@@ -151,6 +158,15 @@ fn build_graph(
                         .and_modify(|v| v.push((x_index + 1, y_index)))
                         .or_insert(vec![(x_index + 1, y_index)]);
                 }
+            } else if value_l == value_r {
+                graph
+                    .entry((x_index + 1, y_index))
+                    .and_modify(|v| v.push((x_index, y_index)))
+                    .or_insert(vec![(x_index, y_index)]);
+                graph
+                    .entry((x_index, y_index))
+                    .and_modify(|v| v.push((x_index + 1, y_index)))
+                    .or_insert(vec![(x_index + 1, y_index)]);
             } else {
                 graph
                     .entry((x_index, y_index))
@@ -168,8 +184,8 @@ fn build_graph(
 
     for x_index in 0..x_len {
         for y_index in 0..(y_len - 1) {
-            let value_o = val(input_map[y_index][x_index]);
-            let value_u = val(input_map[y_index + 1][x_index]);
+            let value_o = val(input_map[y_index][x_index], reverse);
+            let value_u = val(input_map[y_index + 1][x_index], reverse);
             if value_u < value_o {
                 graph
                     .entry((x_index, y_index))
@@ -181,6 +197,15 @@ fn build_graph(
                         .and_modify(|v| v.push((x_index, y_index)))
                         .or_insert(vec![(x_index, y_index)]);
                 }
+            } else if value_o == value_u {
+                graph
+                    .entry((x_index, y_index))
+                    .and_modify(|v| v.push((x_index, y_index + 1)))
+                    .or_insert(vec![(x_index, y_index + 1)]);
+                graph
+                    .entry((x_index, y_index + 1))
+                    .and_modify(|v| v.push((x_index, y_index)))
+                    .or_insert(vec![(x_index, y_index)]);
             } else {
                 graph
                     .entry((x_index, y_index + 1))
@@ -209,18 +234,41 @@ fn main() {
                 }
                 acc
             });
-    let (start, start2, goal, input_graph) = build_graph(input_map);
+    let (start, start2, goal, input_graph) = build_graph(&input_map, false);
     //     (usize, usize),    i32,    HashMap<(usize, usize), (i32, (usize, usize))>,
-    let (goal, goal_value, goal_way) = find_path(&input_graph, start, goal);
+    let (goal, goal_value1, goal_way) = find_path(&input_graph, start, goal);
     //    println!("}goal2: {:?}", goal);
-    println!("goal_value: {:?}", goal_value);
+    println!("goal_value: {:?}", goal_value1);
     //    println!("goal_way: {:?}", goal_way);
 
     /* really no good solution, better invert the dijkstra and take first apearence of 'a'
-    for start2_item in start2 {
-        let (goal, goal_value, goal_way) = find_path(&input_graph, start2_item, goal);
-        if goal_value != -1 {
-            println!("goal_value: {:?}", goal_value);
-        }
+        for start2_item in start2 {
+            let (goal, goal_value, goal_way) = find_path(&input_graph, start2_item, goal);
+            if goal_value != -1 {
+                println!("goal_value: {:?}", goal_value);
+            }
     }*/
+
+    // task 2:
+    let (goal, _, start, input_graph) = build_graph(&input_map, true);
+    let (goalx, goal_value, goal_way) = find_path(&input_graph, start, goal);
+    println!("goalx: {:?}", goalx);
+    println!("goal_value: {:?}", goal_value);
+    println!("goal_way: {:?}", goal_way);
+
+    let mut startmap: HashMap<(usize, usize), bool> = HashMap::new();
+    for start_item in start2 {
+        startmap.insert(start_item, true);
+    }
+    let mut min = goal_value1;
+    for key in goal_way.keys() {
+        if startmap.contains_key(key) {
+            if let Some(value) = goal_way.get(key) {
+                if (value.0 != -1) && (value.0 < min) {
+                    min = value.0;
+                }
+            }
+        }
+    }
+    println!("min: {}", min);
 }
