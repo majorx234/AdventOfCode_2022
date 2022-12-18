@@ -14,6 +14,76 @@ enum Signal {
     None,
 }
 
+fn compare_signals(left: &Signal, right: &Signal) -> Option<bool> {
+    let bool_value: bool = false;
+    match left {
+        Signal::Value(value_left) => match right {
+            Signal::Value(value_right) => {
+                if value_left < value_right {
+                    return Some(true);
+                } else if value_left > value_right {
+                    return Some(false);
+                } else {
+                    return None;
+                }
+            }
+            Signal::List(vec_values_right) => {
+                return compare_signals(
+                    &Signal::List(vec![Signal::Value((value_left).clone())]),
+                    right,
+                );
+            }
+            Signal::None => {
+                println!("right side went out of elements");
+                return Some(false);
+            }
+        },
+        Signal::List(vec_values_left) => match right {
+            Signal::Value(value_right) => {
+                return compare_signals(
+                    left,
+                    &Signal::List(vec![Signal::Value(value_right.clone())]),
+                );
+            }
+            Signal::List(vec_values_right) => {
+                let mut comparer: Option<bool> = None;
+                let mut iter_left = vec_values_left.iter();
+                let mut iter_right = vec_values_right.iter();
+                loop {
+                    if let Some(left_item) = iter_left.next() {
+                        if let Some(right_item) = iter_right.next() {
+                            comparer = compare_signals(left_item, right_item);
+                            match comparer {
+                                Some(_) => {
+                                    return comparer;
+                                }
+                                None => {}
+                            }
+                        } else {
+                            // right side run out of date
+                            return Some(true);
+                        }
+                    } else {
+                        if let Some(right_item) = iter_right.next() {
+                            // left side run out of items
+                            return Some(true);
+                        } else {
+                            comparer = None;
+                        }
+                    }
+                }
+            }
+            Signal::None => {}
+        },
+        Signal::None => {
+            println!("left side went out of elements");
+            return Some(true);
+        }
+    }
+    println!("case is not covered yet");
+    None
+}
+
 fn parse_input(input: &str) -> Vec<(Signal, Signal)> {
     let mut signals: Vec<(Signal, Signal)> = Vec::new();
     let mut signal_temp: (Signal, Signal) = (Signal::None, Signal::None);
