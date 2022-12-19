@@ -4,6 +4,7 @@ use nom::{
     multi::{count, separated_list1},
     IResult,
 };
+use std::cmp::Ordering;
 use std::env::args;
 use std::{fs::read_to_string, path::Path};
 
@@ -191,6 +192,45 @@ fn solve_task1(signals: &Vec<(Signal, Signal)>) {
     println!("task1: sum: {}", sum);
 }
 
+fn solve_task2(mut signals: Vec<(Signal, Signal)>) -> Vec<Signal> {
+    let mut unfold_signals: Vec<Signal> = Vec::new();
+    while let Some(item) = signals.pop() {
+        unfold_signals.push(item.0);
+        unfold_signals.push(item.1);
+    }
+
+    unfold_signals.sort_by(|a, b| {
+        if compare_signals(a, b) == Some(true) {
+            Ordering::Less
+        } else if compare_signals(a, b) == Some(false) {
+            Ordering::Greater
+        } else {
+            Ordering::Equal
+        }
+    });
+    let mut index2 = 0;
+    let mut index6 = 0;
+    for (index, item) in unfold_signals.iter().enumerate() {
+        if compare_signals(
+            item,
+            &Signal::List(vec![Signal::List(vec![Signal::Value(2)])]),
+        ) == None
+        {
+            index2 = index + 1;
+        }
+        if compare_signals(
+            item,
+            &Signal::List(vec![Signal::List(vec![Signal::Value(6)])]),
+        ) == None
+        {
+            index6 = index + 1;
+        }
+    }
+
+    println!("task2 {}", index2 * index6);
+    unfold_signals
+}
+
 fn main() {
     let mut argit = args();
     let file_name = argit.nth(1).clone();
@@ -202,6 +242,13 @@ fn main() {
     } else {
         panic!("No filename argument given");
     };
-    let signals = parse_input(&input);
+    let mut signals = parse_input(&input);
     solve_task1(&signals);
+    // [[2]]
+    // [[6]]
+    signals.push((
+        Signal::List(vec![Signal::List(vec![Signal::Value(2)])]),
+        Signal::List(vec![Signal::List(vec![Signal::Value(6)])]),
+    ));
+    solve_task2(signals);
 }
