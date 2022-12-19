@@ -61,19 +61,22 @@ fn compare_signals(left: &Signal, right: &Signal) -> Option<bool> {
                             }
                         } else {
                             // right side run out of date
-                            return Some(true);
+                            return Some(false);
                         }
                     } else {
                         if let Some(right_item) = iter_right.next() {
                             // left side run out of items
                             return Some(true);
                         } else {
-                            comparer = None;
+                            return None;
                         }
                     }
                 }
             }
-            Signal::None => {}
+            Signal::None => {
+                println!("right side went out of elements");
+                return Some(true);
+            }
         },
         Signal::None => {
             println!("left side went out of elements");
