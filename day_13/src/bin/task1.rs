@@ -175,6 +175,22 @@ fn parse_input(input: &str) -> Vec<(Signal, Signal)> {
     signals
 }
 
+fn solve_task1(signals: &Vec<(Signal, Signal)>) {
+    let mut sum: usize = 0;
+    for (index, (left_signal, right_signal)) in signals.iter().enumerate() {
+        let compare_opt = compare_signals(left_signal, right_signal);
+        match compare_opt {
+            Some(compare_val) => {
+                if compare_val {
+                    sum += index + 1;
+                }
+            }
+            None => {}
+        }
+    }
+    println!("task1: sum: {}", sum);
+}
+
 fn main() {
     let mut argit = args();
     let file_name = argit.nth(1).clone();
@@ -187,4 +203,5 @@ fn main() {
         panic!("No filename argument given");
     };
     let signals = parse_input(&input);
+    solve_task1(&signals);
 }
