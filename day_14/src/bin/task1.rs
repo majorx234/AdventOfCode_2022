@@ -7,6 +7,13 @@ use nom::{
 use std::env::args;
 use std::{fs::read_to_string, path::Path};
 
+#[derive(Clone, Debug, PartialEq)]
+enum Material {
+    Empty,
+    Rock,
+    Sand,
+}
+
 #[derive(Debug)]
 struct RockStruct {
     points: Vec<(i32, i32)>,
@@ -16,15 +23,17 @@ struct RockStruct {
 struct Cave {
     offset_x: i32,
     offset_y: i32,
-    tiles: Vec<Vec<bool>>,
+    tiles: Vec<Vec<Material>>,
 }
 
 impl Cave {
     fn print(&self) {
         for y in 0..self.tiles.len() {
             for x in 0..self.tiles[0].len() {
-                if self.tiles[y][x] == true {
+                if self.tiles[y][x] == Material::Rock {
                     print!("#");
+                } else if self.tiles[y][x] == Material::Sand {
+                    print!("o");
                 } else {
                     print!(".");
                 }
@@ -97,7 +106,7 @@ fn generate_cave_model(rockstructs: Vec<RockStruct>) -> Option<Cave> {
     let mut cave_model = Cave {
         offset_x: offset_x,
         offset_y: offset_y,
-        tiles: vec![vec![false; size_x]; size_y],
+        tiles: vec![vec![Material::Empty; size_x]; size_y],
     };
     for rockstruct in rockstructs {
         for index in 0..(rockstruct.points.len() - 1) {
@@ -107,7 +116,7 @@ fn generate_cave_model(rockstructs: Vec<RockStruct>) -> Option<Cave> {
             let rock_tiles = interpolate(start, end);
 
             for (x, y) in rock_tiles {
-                cave_model.tiles[(y - offset_y) as usize][(x - offset_x) as usize] = true;
+                cave_model.tiles[(y - offset_y) as usize][(x - offset_x) as usize] = Material::Rock;
             }
         }
     }
