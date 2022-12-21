@@ -42,21 +42,22 @@ impl Cave {
         }
     }
 
-    fn simulate_sand_step(&mut self, sand_pouringpoint: (usize, usize)) -> bool {
+    fn simulate_sand_step(&mut self, sand_pouringpoint: (usize, usize)) -> (bool, bool) {
+        let mut task2_finished: bool = true;
         let (start_x, start_y) = sand_pouringpoint;
         if start_x == 0 {
-            return false;
+            return (false, true);
         }
         if start_x == self.tiles[0].len() - 1 {
-            return false;
+            return (false, true);
         }
         if start_y == self.tiles.len() - 1 {
-            return false;
+            return (false, true);
         }
 
         for y in start_y..self.tiles.len() {
             if y == self.tiles.len() - 1 {
-                return false;
+                return (false, true);
             }
             if self.tiles[y + 1][start_x] == Material::Empty {
                 continue;
@@ -69,16 +70,19 @@ impl Cave {
                     } else if self.tiles[y + 1][start_x + 1] == Material::Empty {
                         return self.simulate_sand_step((start_x + 1, y + 1));
                     } else {
+                        if y == start_y {
+                            task2_finished = false;
+                        }
                         self.tiles[y][start_x] = Material::Sand;
                         break;
                     }
                 } else {
-                    return false;
+                    return (false, true);
                 }
             }
             println!("error: should nothing here");
         }
-        true
+        (true, task2_finished)
     }
 }
 
@@ -174,14 +178,20 @@ fn main() {
     };
     let (_, mut rockstructs) = parse_input(&input).unwrap();
     let mut cave = generate_cave_model(rockstructs);
+    let mut task1_fished: Option<i32> = None;
     match cave {
         Some(ref mut cave) => {
             for step in 0.. {
-                let value = cave.simulate_sand_step(((500 - cave.offset_x) as usize, 0));
-                if !value {
-                    cave.print();
-                    println!("steps: {}", step);
-                    break;
+                let (task1_done, task2_done) =
+                    cave.simulate_sand_step(((500 - cave.offset_x) as usize, 0));
+                if !task1_done {
+                    if task1_fished == None {
+                        task1_fished = Some(step);
+                    } else {
+                        // cave.print();
+                        println!("steps: {}", task1_fished.unwrap());
+                        break;
+                    }
                 }
             }
         }
