@@ -41,6 +41,45 @@ impl Cave {
             println!("");
         }
     }
+
+    fn simulate_sand_step(&mut self, sand_pouringpoint: (usize, usize)) -> bool {
+        let (start_x, start_y) = sand_pouringpoint;
+        if start_x == 0 {
+            return false;
+        }
+        if start_x == self.tiles[0].len() - 1 {
+            return false;
+        }
+        if start_y == self.tiles.len() - 1 {
+            return false;
+        }
+
+        for y in start_y..self.tiles.len() {
+            if y == self.tiles.len() - 1 {
+                return false;
+            }
+            if self.tiles[y + 1][start_x] == Material::Empty {
+                continue;
+            } else if self.tiles[y + 1][start_x] == Material::Rock
+                || self.tiles[y + 1][start_x] == Material::Sand
+            {
+                if y != self.tiles.len() - 1 {
+                    if self.tiles[y + 1][start_x - 1] == Material::Empty {
+                        return self.simulate_sand_step((start_x - 1, y + 1));
+                    } else if self.tiles[y + 1][start_x + 1] == Material::Empty {
+                        return self.simulate_sand_step((start_x + 1, y + 1));
+                    } else {
+                        self.tiles[y][start_x] = Material::Sand;
+                        break;
+                    }
+                } else {
+                    return false;
+                }
+            }
+            println!("error: should nothing here");
+        }
+        true
+    }
 }
 
 fn parse_point(input: &str) -> IResult<&str, (i32, i32), ()> {
@@ -99,14 +138,14 @@ fn generate_cave_model(rockstructs: Vec<RockStruct>) -> Option<Cave> {
         }
     }
 
-    let size_x = ((max_x - min_x) + 1) as usize;
+    let size_x = ((max_x - min_x) + 3) as usize;
     let size_y = ((max_y - min_y) + 1) as usize;
     let offset_x = min_x;
     let offset_y = min_y;
     let mut cave_model = Cave {
-        offset_x: offset_x,
+        offset_x: offset_x - 1,
         offset_y: offset_y,
-        tiles: vec![vec![Material::Empty; size_x]; size_y],
+        tiles: vec![vec![Material::Empty; size_x]; size_y + min_y as usize],
     };
     for rockstruct in rockstructs {
         for index in 0..(rockstruct.points.len() - 1) {
@@ -116,12 +155,10 @@ fn generate_cave_model(rockstructs: Vec<RockStruct>) -> Option<Cave> {
             let rock_tiles = interpolate(start, end);
 
             for (x, y) in rock_tiles {
-                cave_model.tiles[(y - offset_y) as usize][(x - offset_x) as usize] = Material::Rock;
+                cave_model.tiles[(y) as usize][(x - offset_x + 1) as usize] = Material::Rock;
             }
         }
     }
-    cave_model.print();
-
     Some(cave_model)
 }
 
@@ -136,5 +173,18 @@ fn main() {
         panic!("No filename argument given");
     };
     let (_, mut rockstructs) = parse_input(&input).unwrap();
-    generate_cave_model(rockstructs);
+    let mut cave = generate_cave_model(rockstructs);
+    match cave {
+        Some(ref mut cave) => {
+            for step in 0.. {
+                let value = cave.simulate_sand_step(((500 - cave.offset_x) as usize, 0));
+                if !value {
+                    cave.print();
+                    println!("steps: {}", step);
+                    break;
+                }
+            }
+        }
+        None => (),
+    }
 }
