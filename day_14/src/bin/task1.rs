@@ -24,6 +24,8 @@ struct Cave {
     offset_x: i32,
     offset_y: i32,
     tiles: Vec<Vec<Material>>,
+    left_side: i32,
+    right_side: i32,
 }
 
 impl Cave {
@@ -38,51 +40,76 @@ impl Cave {
                     print!(".");
                 }
             }
-            println!("");
+            println!();
         }
     }
 
     fn simulate_sand_step(&mut self, sand_pouringpoint: (usize, usize)) -> (bool, bool) {
+        let original_start_y = 0;
+        let original_start_x = (500 - self.offset_x);
         let mut task2_finished: bool = true;
+        let mut task1_finished: bool = true;
         let (start_x, start_y) = sand_pouringpoint;
+        let end_y = self.tiles.len() - start_y - 2;
+        if self.tiles[start_y][start_x] == Material::Sand {
+            return (false, false);
+        }
         if start_x == 0 {
+            if self.left_side == ((end_y * (end_y + 1)) / 2) as i32 {
+                self.tiles[start_y][start_x] = Material::Sand;
+                // println!("ls - o({},{})", start_x, start_y);
+            } else {
+                self.left_side += 1;
+            }
             return (false, true);
         }
         if start_x == self.tiles[0].len() - 1 {
+            if self.right_side == ((end_y * (end_y + 1)) / 2) as i32 {
+                self.tiles[start_y][start_x] = Material::Sand;
+                //  println!("ls - o({},{})", start_x, start_y);
+            } else {
+                self.right_side += 1;
+            }
             return (false, true);
         }
-        if start_y == self.tiles.len() - 1 {
-            return (false, true);
+        if start_y == self.tiles.len() - 2 {
+            //return (false, true);
+            task1_finished = false;
         }
 
         for y in start_y..self.tiles.len() {
-            if y == self.tiles.len() - 1 {
-                return (false, true);
+            if y == self.tiles.len() - 2 {
+                task1_finished = false;
+                self.tiles[y][start_x] = Material::Sand;
+                break;
+                //                return (false, true);
             }
             if self.tiles[y + 1][start_x] == Material::Empty {
                 continue;
             } else if self.tiles[y + 1][start_x] == Material::Rock
                 || self.tiles[y + 1][start_x] == Material::Sand
             {
-                if y != self.tiles.len() - 1 {
+                if y != self.tiles.len() - 2 {
                     if self.tiles[y + 1][start_x - 1] == Material::Empty {
                         return self.simulate_sand_step((start_x - 1, y + 1));
                     } else if self.tiles[y + 1][start_x + 1] == Material::Empty {
                         return self.simulate_sand_step((start_x + 1, y + 1));
                     } else {
-                        if y == start_y {
+                        if y == original_start_y && start_x == original_start_x as usize {
                             task2_finished = false;
                         }
                         self.tiles[y][start_x] = Material::Sand;
                         break;
                     }
                 } else {
-                    return (false, true);
+                    task1_finished = false;
+                    continue;
+                    // return (false, true);
                 }
             }
             println!("error: should nothing here");
         }
-        (true, task2_finished)
+        (task1_finished, task2_finished)
     }
 }
 
@@ -142,14 +169,16 @@ fn generate_cave_model(rockstructs: Vec<RockStruct>) -> Option<Cave> {
         }
     }
 
-    let size_x = ((max_x - min_x) + 3) as usize;
-    let size_y = ((max_y - min_y) + 1) as usize;
+    let size_x = ((max_x - min_x) + 5) as usize;
+    let size_y = ((max_y - min_y) + 3) as usize;
     let offset_x = min_x;
     let offset_y = min_y;
     let mut cave_model = Cave {
-        offset_x: offset_x - 1,
+        offset_x: offset_x - 2,
         offset_y: offset_y,
         tiles: vec![vec![Material::Empty; size_x]; size_y + min_y as usize],
+        left_side: 0,
+        right_side: 0,
     };
     for rockstruct in rockstructs {
         for index in 0..(rockstruct.points.len() - 1) {
@@ -159,9 +188,16 @@ fn generate_cave_model(rockstructs: Vec<RockStruct>) -> Option<Cave> {
             let rock_tiles = interpolate(start, end);
 
             for (x, y) in rock_tiles {
-                cave_model.tiles[(y) as usize][(x - offset_x + 1) as usize] = Material::Rock;
+                cave_model.tiles[(y) as usize][(x - offset_x + 2) as usize] = Material::Rock;
             }
         }
+    }
+
+    let line_start = (0, (max_y + 2) as i32);
+    let line_end = ((size_x - 1) as i32, (max_y + 2) as i32);
+    let rock_tiles = interpolate(line_start, line_end);
+    for (x, y) in rock_tiles {
+        cave_model.tiles[(y) as usize][(x) as usize] = Material::Rock;
     }
     Some(cave_model)
 }
@@ -178,18 +214,27 @@ fn main() {
     };
     let (_, mut rockstructs) = parse_input(&input).unwrap();
     let mut cave = generate_cave_model(rockstructs);
-    let mut task1_fished: Option<i32> = None;
+    let mut task1_finished: Option<i32> = None;
+    let mut task2_finished: Option<i32> = None;
     match cave {
         Some(ref mut cave) => {
             for step in 0.. {
                 let (task1_done, task2_done) =
                     cave.simulate_sand_step(((500 - cave.offset_x) as usize, 0));
                 if !task1_done {
-                    if task1_fished == None {
-                        task1_fished = Some(step);
+                    if task1_finished == None {
+                        task1_finished = Some(step);
+                    }
+                }
+                if !task2_done {
+                    if task2_finished == None {
+                        task2_finished = Some(step + 1);
                     } else {
-                        // cave.print();
-                        println!("steps: {}", task1_fished.unwrap());
+                        cave.print();
+                        println!(
+                            "steps simulated: {} t1: {:?} t2: {:?}",
+                            step, task1_finished, task2_finished
+                        );
                         break;
                     }
                 }
