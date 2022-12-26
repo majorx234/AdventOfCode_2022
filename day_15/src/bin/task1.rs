@@ -24,7 +24,7 @@ fn print_row_map(row_map: HashMap<i32, bool>) {
     for item in row_map {
         println!("{}#", item.0);
     }*/
-    println!("task1:{}", row_map.keys().len() - 1);
+    println!("task1:{}", row_map.keys().len());
 }
 
 fn parse_sensorbeacon(input: &str) -> IResult<&str, (i32, i32, i32, i32), ()> {
@@ -71,6 +71,7 @@ fn no_bacon_posision(row: i32, sensor_beacons: Vec<(i32, i32, i32, i32)>) -> i32
     let (min_x, max_x) = get_x_min_max_beacon(&sensor_beacons);
     let mut dist_vec: Vec<i32> = Vec::new();
     let mut row_map: HashMap<i32, bool> = HashMap::new();
+    let mut to_delete: Vec<i32> = Vec::new();
     for (s_x, s_y, b_x, b_y) in sensor_beacons {
         let manhatten_dist = manhatten_dist(s_x, s_y, b_x, b_y);
         let row_dist = if row < s_y { s_y - row } else { row - s_y };
@@ -89,6 +90,12 @@ fn no_bacon_posision(row: i32, sensor_beacons: Vec<(i32, i32, i32, i32)>) -> i32
         } else {
             dist_vec.push(-1);
         }
+        if b_y == row {
+            to_delete.push(b_x);
+        }
+    }
+    for b_x in to_delete {
+        row_map.remove(&(b_x - min_x));
     }
     print_row_map(row_map);
     0
